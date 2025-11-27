@@ -163,6 +163,15 @@ async def criar_venda(
     session.add(sale)
     await session.commit()
     await session.refresh(sale)
+    result = await session.execute(
+        select(Sale)
+            .options(
+                selectinload(Sale.items),
+                selectinload(Sale.payments),
+            )
+            .where(Sale.id == sale.id)
+    )
+    sale = result.scalar_one()
     await log_action(
         session,
         user,

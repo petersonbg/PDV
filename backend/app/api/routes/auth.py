@@ -42,8 +42,8 @@ async def _issue_refresh_token(session: AsyncSession, user: User) -> str:
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(get_db)
 ):
-    result = await session.execute(User.__table__.select().where(User.email == form_data.username))
-    user = result.scalar_one_or_none()
+    result = await session.execute(select(User).where(User.email == form_data.username))
+    user = result.scalars().first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials")
     if not user.is_active:
