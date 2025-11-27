@@ -1,13 +1,15 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Sequence
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.config import get_settings
-from app.core.security import verify_password
 from app.db.session import get_session
-from app.models.user import User
+from app.models.user import Role, User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
@@ -35,7 +37,12 @@ async def get_current_user(
         raise credentials_exception
 
     result = await session.execute(
-        User.__table__.select().where(User.email == email)  # type: ignore[arg-type]
+        select(User)
+        .options(
+            selectinload(User.roles).selectinload(Role.permissions),
+            selectinload(User.roles),
+        )
+        .where(User.email == email)
     )
     user = result.scalar_one_or_none()
     if not user:
@@ -47,3 +54,28 @@ async def get_active_user(current_user: User = Depends(get_current_user)) -> Use
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+def authorize(
+    roles: Sequence[str] | None = None, permissions: Sequence[str] | None = None
+):
+    async def dependency(current_user: User = Depends(get_active_user)) -> User:
+        if current_user.is_superuser:
+            return current_user
+
+        role_names: set[str] = {role.name for role in current_user.roles}
+        permission_codes: set[str] = {
+            permission.code
+            for role in current_user.roles
+            for permission in role.permissions
+        }
+
+        if roles and not role_names.intersection(roles):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Perfil insuficiente")
+
+        if permissions and not set(permissions).issubset(permission_codes):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permissão insuficiente")
+
+        return current_user
+
+    return dependency
