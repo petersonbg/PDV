@@ -16,10 +16,12 @@ class Sale(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     cashier_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    cash_register_id = Column(Integer, ForeignKey("cash_registers.id"), nullable=True)
 
     items = relationship("SaleItem", back_populates="sale", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="sale", cascade="all, delete-orphan")
     fiscal_documents = relationship("FiscalDocument", back_populates="sale")
+    cash_register = relationship("CashRegister", back_populates="sales")
 
 
 class SaleItem(Base):
@@ -34,6 +36,7 @@ class SaleItem(Base):
 
     sale = relationship("Sale", back_populates="items")
     product = relationship("Product", back_populates="sale_items")
+    stock_movements = relationship("StockMovement", back_populates="sale_item")
 
 
 class Customer(Base):
@@ -58,5 +61,7 @@ class Payment(Base):
     transaction_code = Column(String, nullable=True)
     paid = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    cash_register_id = Column(Integer, ForeignKey("cash_registers.id"), nullable=True)
 
     sale = relationship("Sale", back_populates="payments")
+    cash_register = relationship("CashRegister", back_populates="payments")
