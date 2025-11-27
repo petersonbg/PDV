@@ -3,8 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
-from app.fiscal import ContingencyManager, DigitalSigner, NfceXmlBuilder, SefazClient, TaxTableRepository
-from app.fiscal.sefaz import SefazResponse
+from app.fiscal.contingency import ContingencyManager
+from app.fiscal.sefaz import SefazClient, SefazResponse
+from app.fiscal.signature import DigitalSigner
+from app.fiscal.tax_tables import TaxTableRepository
+from app.fiscal.xml_builder import NfceXmlBuilder
 from app.schemas.fiscal import InvoiceItem
 
 
