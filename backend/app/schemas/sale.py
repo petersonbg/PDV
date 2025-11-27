@@ -41,6 +41,30 @@ class SaleCreate(SaleBase):
     payments: List[PaymentBase]
 
 
+class SaleStart(SaleBase):
+    cash_register_id: Optional[int] = None
+
+
+class SaleAddItem(BaseModel):
+    sale_id: int
+    product_id: int
+    quantity: float
+    unit_price: Optional[float] = None
+
+
+class SaleFinalize(BaseModel):
+    sale_id: int
+    payments: List[PaymentBase]
+    discount: float = 0
+    cash_register_id: Optional[int] = None
+
+
+class SaleCancel(BaseModel):
+    sale_id: int
+    reason: Optional[str] = None
+    restock: bool = True
+
+
 class Sale(SaleBase):
     id: int
     code: str
@@ -49,6 +73,15 @@ class Sale(SaleBase):
     created_at: datetime
     items: List[SaleItem]
     payments: List[Payment]
+
+    class Config:
+        orm_mode = True
+
+
+class SaleWorkflowResult(BaseModel):
+    sale: Sale
+    receipt: Optional[str] = None
+    cash_control: Optional[dict] = None
 
     class Config:
         orm_mode = True
