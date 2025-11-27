@@ -15,11 +15,11 @@ from app.core.security import (
     hash_token,
     verify_password,
 )
+from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.schemas import auth as auth_schema
 from app.schemas import user as user_schema
 from app.services.audit import log_action
-from app.models.refresh_token import RefreshToken
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
