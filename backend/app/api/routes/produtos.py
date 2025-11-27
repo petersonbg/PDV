@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import authorize, get_db
 from app.models.product import Product
 from app.schemas import product as product_schema
+from app.services.audit import log_action
 from app.services.crud_base import CRUDBase
 
 router = APIRouter(prefix="/produtos", tags=["produtos"])
@@ -22,9 +23,11 @@ async def listar_produtos(
 async def criar_produto(
     payload: product_schema.ProductCreate,
     session: AsyncSession = Depends(get_db),
-    _: None = Depends(authorize(roles=["GERENTE"])),
+    current_user=Depends(authorize(roles=["GERENTE"])),
 ):
-    return await product_crud.create(session, payload)
+    product = await product_crud.create(session, payload)
+    await log_action(session, current_user, "create_product", "Product", product.id, payload.dict())
+    return product
 
 
 @router.get("/{product_id}", response_model=product_schema.Product)

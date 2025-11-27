@@ -1,5 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
+from datetime import datetime
+
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -32,6 +34,9 @@ class User(Base):
 
     roles = relationship("Role", secondary=user_roles, back_populates="users")
     audit_logs = relationship("AuditLog", back_populates="user")
+    refresh_tokens = relationship(
+        "RefreshToken", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Role(Base):

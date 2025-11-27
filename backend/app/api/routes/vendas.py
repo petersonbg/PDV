@@ -10,6 +10,7 @@ from app.models.cash import CashRegister
 from app.models.product import Product, StockItem, StockLocation, StockMovement
 from app.models.sale import Payment, Sale, SaleItem
 from app.schemas import sale as sale_schema
+from app.services.audit import log_action
 
 router = APIRouter(prefix="/vendas", tags=["vendas"])
 
@@ -129,7 +130,7 @@ async def listar_vendas(
 async def criar_venda(
     payload: sale_schema.SaleCreate,
     session: AsyncSession = Depends(get_db),
-    _: None = Depends(authorize(roles=["GERENTE", "VENDEDOR"])),
+    user=Depends(authorize(roles=["GERENTE", "VENDEDOR"])),
 ):
     sale_code = uuid.uuid4().hex[:8]
     itens: list[SaleItem] = []
@@ -162,6 +163,14 @@ async def criar_venda(
     session.add(sale)
     await session.commit()
     await session.refresh(sale)
+    await log_action(
+        session,
+        user,
+        "create_sale",
+        "Sale",
+        sale.id,
+        {"customer_id": payload.customer_id, "items": [item.dict() for item in payload.items]},
+    )
     return sale
 
 
@@ -188,6 +197,7 @@ async def iniciar_venda(
     session.add(sale)
     await session.commit()
     await session.refresh(sale)
+    await log_action(session, user, "start_sale", "Sale", sale.id, payload.dict())
     return sale
 
 
@@ -195,7 +205,7 @@ async def iniciar_venda(
 async def adicionar_item(
     payload: sale_schema.SaleAddItem,
     session: AsyncSession = Depends(get_db),
-    _: None = Depends(authorize(roles=["GERENTE", "VENDEDOR"])),
+    user=Depends(authorize(roles=["GERENTE", "VENDEDOR"])),
 ):
     sale = await _buscar_venda(session, payload.sale_id)
     if sale.status in {"completed", "canceled"}:
@@ -217,6 +227,7 @@ async def adicionar_item(
     sale.total = _calcular_total(sale.items) - float(sale.discount or 0)
     await session.commit()
     await session.refresh(sale)
+    await log_action(session, user, "add_sale_item", "Sale", sale.id, payload.dict())
     return sale
 
 
@@ -260,6 +271,14 @@ async def finalizar_venda(
     await _registrar_baixa_estoque(session, sale, getattr(user, "id", None))
     await session.commit()
     await session.refresh(sale)
+    await log_action(
+        session,
+        user,
+        "finalize_sale",
+        "Sale",
+        sale.id,
+        {"payments": [p.dict() for p in payload.payments], "discount": payload.discount},
+    )
 
     receipt = _gerar_cupom(sale)
     cash_info = None
@@ -287,6 +306,7 @@ async def cancelar_venda(
 
     await session.commit()
     await session.refresh(sale)
+    await log_action(session, user, "cancel_sale", "Sale", sale.id, payload.dict())
     return sale
 
 
