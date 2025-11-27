@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     secret_key: str = Field("changeme", description="Chave JWT/criptografia")
     algorithm: str = Field("HS256", description="Algoritmo JWT")
     access_token_expire_minutes: int = Field(60 * 8, description="Duração do token JWT")
+    refresh_token_expire_days: int = Field(7, description="Duração do refresh token em dias")
+    log_file: str = Field("logs/app.log", description="Arquivo para logs de erro")
 
     database_url: str = Field(
         "postgresql+asyncpg://pdv:pdv@localhost:5432/pdv",

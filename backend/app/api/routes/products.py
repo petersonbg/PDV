@@ -2,15 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.api.deps import get_active_user, get_db
+from app.api.deps import authorize, get_active_user, get_db
 from app.models.product import Product
 from app.schemas import product as product_schema
+from app.services.audit import log_action
 
 router = APIRouter(prefix="/products", tags=["products"])
 
 
 @router.get("/", response_model=list[product_schema.Product])
-async def list_products(session: AsyncSession = Depends(get_db)):
+async def list_products(
+    session: AsyncSession = Depends(get_db),
+    _: None = Depends(authorize(roles=["GERENTE", "VENDEDOR"])),
+):
     result = await session.execute(select(Product))
     return result.scalars().all()
 
@@ -25,6 +29,7 @@ async def create_product(
     session.add(product)
     await session.commit()
     await session.refresh(product)
+    await log_action(session, user, "create_product", "Product", product.id, payload.dict())
     return product
 
 
