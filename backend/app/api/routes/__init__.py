@@ -1,4 +1,4 @@
-from . import auth, estoque, financeiro, fiscal, health, produtos, vendas
+from . import auth, estoque, financeiro, fiscal, health, produtos, relatorios, vendas
 
 __all__ = [
     "auth",
@@ -7,5 +7,6 @@ __all__ = [
     "fiscal",
     "health",
     "produtos",
+    "relatorios",
     "vendas",
 ]
