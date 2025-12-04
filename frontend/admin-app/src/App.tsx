@@ -3,6 +3,7 @@ import Header from './components/Header'
 import InventoryHealth from './components/InventoryHealth'
 import SalesPerformance from './components/SalesPerformance'
 import Sidebar from './components/Sidebar'
+import Reports from './components/Reports'
 import SummaryCards from './components/SummaryCards'
 import TaskBoard from './components/TaskBoard'
 
@@ -16,6 +17,7 @@ function App() {
           <SummaryCards />
           <SalesPerformance />
           <InventoryHealth />
+          <Reports />
           <TaskBoard />
           <ActivityFeed />
         </div>
