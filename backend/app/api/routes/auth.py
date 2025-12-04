@@ -90,6 +90,37 @@ async def refresh_access_token(
     }
 
 
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    payload: auth_schema.LogoutRequest,
+    session: AsyncSession = Depends(get_db),
+    current_user: User = Depends(authorize()),
+):
+    token_hash = hash_token(payload.refresh_token)
+    result = await session.execute(
+        select(RefreshToken).where(
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.user_id == current_user.id,
+            RefreshToken.revoked.is_(False),
+        )
+    )
+    stored = result.scalar_one_or_none()
+    if not stored:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token inválido")
+
+    stored.revoked = True
+    await session.commit()
+    await log_action(
+        session,
+        current_user,
+        "logout",
+        "RefreshToken",
+        stored.id,
+        {"user_id": current_user.id},
+    )
+    return {"detail": "Logout realizado"}
+
+
 @router.post("/usuarios", response_model=user_schema.User, status_code=status.HTTP_201_CREATED)
 async def criar_usuario(
     payload: user_schema.UserCreate,
@@ -111,3 +142,8 @@ async def criar_usuario(
     await session.refresh(user)
     await log_action(session, current_user, "create_user", "User", user.id, {"email": user.email})
     return user
+
+
+@router.get("/me", response_model=user_schema.User)
+async def get_current_user_profile(current_user: User = Depends(authorize())) -> User:
+    return current_user

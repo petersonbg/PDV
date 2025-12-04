@@ -73,6 +73,23 @@ def test_authentication_login_and_refresh(client: AsyncClient, session_factory: 
     assert refreshed["refresh_token"]
     assert refreshed["token_type"] == "bearer"
 
+    me_response = run(client.get("/api/auth/me", headers={"Authorization": f"Bearer {tokens['access_token']}"}))
+    assert me_response.status_code == 200
+    assert me_response.json()["email"] == email
+
+    logout_response = run(
+        client.post(
+            "/api/auth/logout",
+            json={"refresh_token": refreshed["refresh_token"]},
+            headers={"Authorization": f"Bearer {tokens['access_token']}"},
+        )
+    )
+    assert logout_response.status_code == 200
+    assert logout_response.json()["detail"] == "Logout realizado"
+
+    second_refresh = run(client.post("/api/auth/refresh", json={"refresh_token": tokens["refresh_token"]}))
+    assert second_refresh.status_code == 401
+
 
 def test_product_crud_flow(client: AsyncClient, session_factory: sessionmaker):
     email = "manager@example.com"
