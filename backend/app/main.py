@@ -15,6 +15,7 @@ from app.api.routes import (
     fiscal,
     health,
     impressoras,
+    pagamentos,
     produtos,
     relatorios,
     vendas,
@@ -43,6 +44,7 @@ app.include_router(produtos.router, prefix="/api")
 app.include_router(vendas.router, prefix="/api")
 app.include_router(estoque.router, prefix="/api")
 app.include_router(financeiro.router, prefix="/api")
+app.include_router(pagamentos.router, prefix="/api")
 app.include_router(fiscal.router, prefix="/api")
 app.include_router(relatorios.router, prefix="/api")
 app.include_router(impressoras.router, prefix="/api")
