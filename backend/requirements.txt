@@ -1,11 +1,25 @@
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
+
+# Banco de dados
 SQLAlchemy==2.0.30
-asyncpg==0.29.0
-pydantic==1.10.14
+asyncpg==0.31.0
+
+# Pydantic v2 (obrigatório para FastAPI 0.111+)
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# Autenticação
 python-jose==3.3.0
 passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+
+# Migrações
 alembic==1.13.1
+
+# HTTP client
 httpx>=0.27.0,<0.29.0
+
+# Testes
 pytest>=8.3.2
-python-multipart>=0.0.9
+

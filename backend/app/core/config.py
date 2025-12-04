@@ -1,5 +1,6 @@
 from functools import lru_cache
-from pydantic import BaseSettings, Field
+from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -11,13 +12,15 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = Field(7, description="Duração do refresh token em dias")
     log_file: str = Field("logs/app.log", description="Arquivo para logs de erro")
 
+    # IMPORTANTE: no Docker, o host é "postgres", não "localhost"
     database_url: str = Field(
-        "postgresql+asyncpg://pdv:pdv@localhost:5432/pdv",
-        description="URL de conexão ao PostgreSQL",
+        default="postgresql+asyncpg://pdv:pdv@postgres:5432/pdv",
+        description="URL de conexão ao PostgreSQL"
     )
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
         case_sensitive = False
 
 

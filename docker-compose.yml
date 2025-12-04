@@ -1,26 +1,24 @@
-version: "3.9"
 services:
-  db:
+  postgres:
     image: postgres:15
+    container_name: pdv-postgres
+    restart: always
     environment:
-      POSTGRES_USER: pdv
-      POSTGRES_PASSWORD: pdv
-      POSTGRES_DB: pdv
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pdv_database
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-  api:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  backend:
     build: ./backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    environment:
-      DATABASE_URL: postgresql+asyncpg://pdv:pdv@db:5432/pdv
-      SECRET_KEY: changeme
-    volumes:
-      - ./backend:/app
+    container_name: pdv-backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres
     ports:
       - "8000:8000"
-    depends_on:
-      - db
-volumes:
-  pgdata:
