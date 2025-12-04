@@ -14,6 +14,8 @@ alembic upgrade head
 alembic revision --autogenerate -m "mensagem"
 ```
 
+> No ambiente Docker, as migrações são executadas automaticamente via `start.sh` antes de subir o servidor FastAPI, garantindo que o banco esteja criado e atualizado.
+
 ## Estrutura
 - `app/core`: configurações e utilidades de segurança (JWT, hashing).
 - `app/models`: modelos SQLAlchemy (usuários, produtos, vendas, fiscal, auditoria).
