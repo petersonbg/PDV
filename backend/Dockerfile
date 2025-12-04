@@ -15,5 +15,5 @@ COPY . .
 # Expõe a porta usada pelo FastAPI
 EXPOSE 8000
 
-# Comando para rodar o servidor
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Comando para aplicar migrações e rodar o servidor
+CMD ["./start.sh"]
