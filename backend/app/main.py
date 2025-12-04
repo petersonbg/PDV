@@ -8,7 +8,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from app.api.routes import auth, estoque, financeiro, fiscal, health, produtos, relatorios, vendas
+from app.api.routes import (
+    auth,
+    estoque,
+    financeiro,
+    fiscal,
+    health,
+    impressoras,
+    produtos,
+    relatorios,
+    vendas,
+)
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.db.session import AsyncSessionLocal
@@ -35,6 +45,7 @@ app.include_router(estoque.router, prefix="/api")
 app.include_router(financeiro.router, prefix="/api")
 app.include_router(fiscal.router, prefix="/api")
 app.include_router(relatorios.router, prefix="/api")
+app.include_router(impressoras.router, prefix="/api")
 
 
 @app.get("/", tags=["root"])
