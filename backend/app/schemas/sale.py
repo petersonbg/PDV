@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class SaleItemBase(BaseModel):
@@ -13,8 +13,7 @@ class SaleItem(SaleItemBase):
     id: int
     total_price: float
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaymentBase(BaseModel):
@@ -27,8 +26,7 @@ class Payment(PaymentBase):
     transaction_code: Optional[str] = None
     paid: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SaleBase(BaseModel):
@@ -74,8 +72,7 @@ class Sale(SaleBase):
     items: List[SaleItem]
     payments: List[Payment]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SaleWorkflowResult(BaseModel):
@@ -83,5 +80,4 @@ class SaleWorkflowResult(BaseModel):
     receipt: Optional[str] = None
     cash_control: Optional[dict] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
